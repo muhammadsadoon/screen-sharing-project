@@ -25,6 +25,8 @@
 
 📱 **Cross-Platform**
 - Works on desktop and mobile browsers
+- **Mobile**: Shares camera feed (screen sharing not supported)
+- **Desktop**: Full screen sharing capability
 - Responsive design for all screen sizes
 - Modern, intuitive user interface
 
@@ -89,20 +91,21 @@
 ## 📖 How to Use
 
 ### For the Sharer:
-1. Click **"Start Sharing"** to begin screen capture
-2. A unique Room ID will be generated automatically
-3. Click **"Copy"** to copy the Room ID
-4. Share the Room ID with your viewers
+1. **On Desktop**: Click **"Start Screen Share"** to share your screen
+2. **On Mobile**: Click **"Start Camera Share"** to share your camera feed
+3. A unique Room ID will be generated automatically
+4. Click **"Copy"** to copy the Room ID
+5. Share the Room ID with your viewers
 
 ### For the Viewer:
 1. Enter the Room ID provided by the sharer
 2. Click **"Join Room"** to connect
-3. Enjoy the shared screen in real-time!
+3. Enjoy the shared content in real-time!
 
-### Controls:
-- **Stop Sharing**: Ends the session and cleans up data
-- **Disconnect**: Leave the viewing session
-- **Video Controls**: Manual play/pause if needed
+### Platform Notes:
+- **Desktop**: Full screen sharing with audio/video
+- **Mobile**: Camera sharing (screen sharing not supported by most mobile browsers)
+- **iOS Safari**: May require additional permissions for camera access
 
 ---
 

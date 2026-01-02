@@ -7,6 +7,20 @@ const ShareScreen = () => {
   const peerRef = useRef(null);
   const [roomId, setRoomId] = useState("");
   const [isSharing, setIsSharing] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile device
+  React.useEffect(() => {
+    const checkMobile = () => {
+      const mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+                    window.innerWidth <= 768;
+      setIsMobile(mobile);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const stopShare = async () => {
     if (peerRef.current) {
@@ -31,13 +45,29 @@ const ShareScreen = () => {
     setRoomId(generatedRoomId);
 
     try {
-      // 1️⃣ Screen capture
-      console.log("🎥 Requesting screen capture...");
-      const stream = await navigator.mediaDevices.getDisplayMedia({
-        video: { mediaSource: 'screen' },
-        audio: false
-      });
-      console.log("✅ Screen captured successfully", stream);
+      let stream;
+
+      if (isMobile) {
+        // Mobile: Use camera instead of screen sharing
+        console.log("📱 Mobile detected - using camera for sharing...");
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: 'user', // Use front camera
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          },
+          audio: false
+        });
+        console.log("✅ Camera access granted on mobile", stream);
+      } else {
+        // Desktop: Use screen sharing
+        console.log("🖥️ Desktop detected - requesting screen capture...");
+        stream = await navigator.mediaDevices.getDisplayMedia({
+          video: { mediaSource: 'screen' },
+          audio: false
+        });
+        console.log("✅ Screen captured successfully", stream);
+      }
 
       // 2️⃣ Create Peer (initiator)
       const peer = new SimplePeer({
@@ -99,7 +129,18 @@ const ShareScreen = () => {
 
   return (
     <div>
-      <h3>📺 Share Your Screen</h3>
+      <h3>{isMobile ? "📱 Share Your Camera" : "📺 Share Your Screen"}</h3>
+      {isMobile && (
+        <div className="mobile-notice" style={{
+          background: "#e3f2fd",
+          padding: "1rem",
+          borderRadius: "8px",
+          marginBottom: "1rem",
+          border: "1px solid #2196f3"
+        }}>
+          <strong>📱 Mobile Mode:</strong> Sharing your camera feed instead of screen (screen sharing not supported on mobile)
+        </div>
+      )}
       <div className="input-group">
         <label htmlFor="room-id-sharer">Room ID (Share this with viewers)</label>
         <div style={{ display: "flex", gap: "10px" }}>
@@ -125,7 +166,7 @@ const ShareScreen = () => {
       <div style={{ display: "flex", gap: "10px", marginBottom: "1rem" }}>
         {!isSharing ? (
           <button className="btn" onClick={startShare}>
-            🚀 Start Sharing
+            {isMobile ? "📱 Start Camera Share" : "🚀 Start Screen Share"}
           </button>
         ) : (
           <button className="btn btn-secondary" onClick={stopShare}>
@@ -135,8 +176,8 @@ const ShareScreen = () => {
       </div>
       {isSharing && (
         <div className="status-indicator status-sharing">
-          <span>📡</span>
-          Broadcasting to room: <strong>{roomId}</strong>
+          <span>{isMobile ? "📱" : "📡"}</span>
+          {isMobile ? "Broadcasting camera to" : "Broadcasting screen to"} room: <strong>{roomId}</strong>
         </div>
       )}
     </div>

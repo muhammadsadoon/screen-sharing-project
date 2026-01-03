@@ -161,6 +161,7 @@ body {
   border-radius: 8px;
   border: 2px solid var(--border-color);
   background: #000;
+  object-fit: contain;
 }
 
 .status-indicator {

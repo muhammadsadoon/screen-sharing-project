@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import SimplePeer from "simple-peer";
 import { ref, onValue, set } from "firebase/database";
 import { db, ensureAuthenticated } from "../firebase/config";
@@ -8,6 +8,15 @@ const Viewer = () => {
     const peerRef = useRef(null);
     const [roomId, setRoomId] = useState("");
     const [isConnected, setIsConnected] = useState(false);
+    const [isFullscreen, setIsFullscreen] = useState(false);
+
+    useEffect(() => {
+        const handleFullscreenChange = () => {
+            setIsFullscreen(!!document.fullscreenElement);
+        };
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    }, []);
 
     const disconnect = () => {
         if (peerRef.current) {
@@ -24,14 +33,14 @@ const Viewer = () => {
         if (!roomId.trim()) return;
 
         const peer = new SimplePeer({
-          initiator: false,
-          trickle: false,
-          config: {
-            iceServers: [
-              { urls: 'stun:stun.l.google.com:19302' },
-              { urls: 'stun:stun1.l.google.com:19302' }
-            ]
-          }
+            initiator: false,
+            trickle: false,
+            config: {
+                iceServers: [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:stun1.l.google.com:19302' }
+                ]
+            }
         });
         peerRef.current = peer;
         setIsConnected(true);
@@ -39,7 +48,7 @@ const Viewer = () => {
         peer.on("error", err => console.error("Peer error:", err));
 
         peer.on("connect", () => {
-          console.log("✅ Peer connected as viewer - waiting for stream");
+            console.log("✅ Peer connected as viewer - waiting for stream");
         });
 
         peer.on("close", () => {
@@ -53,7 +62,9 @@ const Viewer = () => {
         // Receive stream
         peer.on("stream", stream => {
             console.log("🎥 Stream received, setting to video", stream);
-            videoRef.current.srcObject = stream;
+            if (!videoRef.current.srcObject) {
+                videoRef.current.srcObject = stream;
+            }
         });
 
         // Listen for offer from Firebase
@@ -67,12 +78,12 @@ const Viewer = () => {
         peer.on("signal", async answer => {
             console.log("Sending answer:", answer);
             try {
-              await ensureAuthenticated();
-              set(ref(db, `rooms/${roomId}/answer`), answer)
-                .then(() => console.log("Answer set successfully"))
-                .catch(error => console.error("Failed to set answer:", error));
+                await ensureAuthenticated();
+                set(ref(db, `rooms/${roomId}/answer`), answer)
+                    .then(() => console.log("Answer set successfully"))
+                    .catch(error => console.error("Failed to set answer:", error));
             } catch (authError) {
-              console.error("Auth failed for answer:", authError);
+                console.error("Auth failed for answer:", authError);
             }
         });
     };
@@ -110,6 +121,11 @@ const Viewer = () => {
             <div className="video-container">
                 <video ref={videoRef} autoPlay playsInline />
             </div>
+            {isFullscreen ? (
+                <button onClick={() => { try { document.exitFullscreen(); } catch (error) { console.error('Exit fullscreen error:', error); } }}>Exit full screen</button>
+            ) : (
+                <button onClick={() => { try { videoRef.current.requestFullscreen(); } catch (error) { console.error('Fullscreen error:', error); } }}>Full screen</button>
+            )}
         </div>
     );
 };

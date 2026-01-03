@@ -48,26 +48,17 @@ const ShareScreen = () => {
       let stream;
 
       if (isMobile) {
-        // Mobile: Try screen sharing first, fallback to camera
-        console.log("📱 Mobile detected - trying screen sharing...");
-        try {
-          stream = await navigator.mediaDevices.getDisplayMedia({
-            video: { mediaSource: 'screen' },
-            audio: false
-          });
-          console.log("✅ Screen captured on mobile", stream);
-        } catch (screenError) {
-          console.log("❌ Screen sharing failed on mobile, falling back to camera", screenError);
-          stream = await navigator.mediaDevices.getUserMedia({
-            video: {
-              facingMode: 'user', // Use front camera
-              width: { ideal: 1280 },
-              height: { ideal: 720 }
-            },
-            audio: false
-          });
-          console.log("✅ Camera access granted on mobile", stream);
-        }
+        // Mobile: Use camera for sharing
+        console.log("📱 Mobile detected - using camera for sharing...");
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: 'user', // Use front camera
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          },
+          audio: false
+        });
+        console.log("✅ Camera access granted on mobile", stream);
       } else {
         // Desktop: Use screen sharing
         console.log("🖥️ Desktop detected - requesting screen capture...");

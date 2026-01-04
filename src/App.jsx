@@ -1,6 +1,6 @@
 import ShareScreen from "./components/ShareScreen";
 import Viewer from "./components/Viewer";
-import "./app.css";
+import "./App.css";
 
 function App() {
   return (
